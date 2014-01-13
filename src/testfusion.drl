@@ -1,0 +1,71 @@
+import main.hellodrools.Message
+import main.hellodrools.LightUpEvent
+import main.hellodrools.LightDownEvent
+import main.hellodrools.ReachedBottom
+import main.hellodrools.ReachedBottomEvent
+
+declare Message
+@role(event)
+end
+
+declare ReachedBottom
+@role(event)
+end
+
+declare ReachedBottomEvent
+@role(event)
+end
+
+declare LightUpEvent
+@role(event)
+@expires(1s)
+end
+
+declare LightDownEvent
+@role(event)
+@expires(1s)
+end
+
+rule "fast enough"
+when
+    $message1:Message() from entry-point startEntryPoint
+    $message2:Message(!$message2.isProcessed() && !$message1.isProcessed(),
+                        $message1 != $message2,
+                        this after [ 0s,  1s ] $message1 )  from entry-point startEntryPoint
+then
+    $message1.setProcessed(true);
+    insert(new LightUpEvent());
+end
+
+rule "light up"
+    when
+        LightUpEvent()
+    then
+        System.out.println("UP!");
+    end
+
+rule "start dimming away" timer(1s)
+    when
+        not(event:LightUpEvent())
+    then
+        System.out.println("too slow!");
+        insert(new LightDownEvent());
+    end
+
+rule "light down" timer (1s)
+    when
+        LightDownEvent()
+        not (lightUpEvent:LightUpEvent())
+        not (reachedBottomEvent:ReachedBottomEvent()) // TODO reachedBottom blokuje totalnie down. Tak jakby nie zuzyl tego eventu
+    then
+        System.out.println("DOWN!");
+        insert(new LightDownEvent());
+    end
+
+rule "bottom"
+    when
+        ReachedBottom() from entry-point startEntryPoint
+    then
+        System.out.println("bottom!");
+        insert(new ReachedBottomEvent());
+    end
