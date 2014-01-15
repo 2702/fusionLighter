@@ -1,4 +1,4 @@
-package main.hellodrools;
+package main.event;
 
 public class LightDownEvent
 {

@@ -1,9 +1,0 @@
-import main.hellodrools.Message
-
-rule "Hello World"
-
-when
-    message:Message (type=="Hello")
-then
-    System.out.println("Hello World, Drools!");
-end

@@ -1,8 +1,8 @@
-import main.hellodrools.Message
-import main.hellodrools.LightUpEvent
-import main.hellodrools.LightDownEvent
-import main.hellodrools.ReachedBottom
-import main.hellodrools.ReachedBottomEvent
+import main.event.Message
+import main.event.LightUpEvent
+import main.event.LightDownEvent
+import main.event.ReachedBottom
+import main.event.ReachedBottomEvent
 
 declare Message
 @role(event)
@@ -26,6 +26,8 @@ declare LightDownEvent
 @expires(1s)
 end
 
+global main.Lighter lighter;
+
 rule "fast enough"
 when
     $message1:Message() from entry-point startEntryPoint
@@ -41,7 +43,7 @@ rule "light up"
     when
         LightUpEvent()
     then
-        System.out.println("UP!");
+        lighter.up();
     end
 
 rule "start dimming away" timer(1s)
@@ -56,9 +58,9 @@ rule "light down" timer (1s)
     when
         LightDownEvent()
         not (lightUpEvent:LightUpEvent())
-        not (reachedBottomEvent:ReachedBottomEvent()) // TODO reachedBottom blokuje totalnie down. Tak jakby nie zuzyl tego eventu
+        not (reachedBottomEvent:ReachedBottomEvent())
     then
-        System.out.println("DOWN!");
+        lighter.down();
         insert(new LightDownEvent());
     end
 
@@ -68,4 +70,14 @@ rule "bottom"
     then
         System.out.println("bottom!");
         insert(new ReachedBottomEvent());
+    end
+
+rule "prevent down"
+    when
+        $downEvent:LightDownEvent()
+        $bottomEvent:ReachedBottomEvent()
+    then
+        retract($downEvent);
+        retract($bottomEvent);
+        System.out.println("stopped going down!");
     end
