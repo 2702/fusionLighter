@@ -1,6 +1,5 @@
 package main.lighter;
 
-import main.event.Message;
 import main.event.ReachedBottom;
 import org.drools.runtime.rule.WorkingMemoryEntryPoint;
 
@@ -12,6 +11,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class SwingLighter extends LoggingLighter
@@ -71,15 +72,21 @@ public class SwingLighter extends LoggingLighter
     private void loadImages()
     {
         final File imagesDirectory = new File(System.getProperty("user.dir") + "/res/images");
+        List<ImageIcon> icons = new ArrayList<ImageIcon>();
         for (final File file : imagesDirectory.listFiles())
         {
             try
             {
-                images.add(new ImageIcon(ImageIO.read(file)));
+                icons.add(new ImageIcon(ImageIO.read(file), file.getName()));
             } catch (IOException e)
             {
                 e.printStackTrace();
             }
+        }
+        Collections.sort(icons, new FileNameComparator());
+        for (Icon icon : icons)
+        {
+            images.add(icon);
         }
     }
 
@@ -128,7 +135,7 @@ public class SwingLighter extends LoggingLighter
                 @Override
                 public void actionPerformed(ActionEvent e)
                 {
-                    startEntryPoint.insert(new Message());
+                    startEntryPoint.insert(new main.event.ClickEvent());
                 }
             });
             pack();

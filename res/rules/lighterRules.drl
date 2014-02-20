@@ -1,10 +1,10 @@
-import main.event.Message
+import main.event.ClickEvent
 import main.event.LightUpEvent
 import main.event.LightDownEvent
 import main.event.ReachedBottom
 import main.event.ReachedBottomEvent
 
-declare Message
+declare ClickEvent
 @role(event)
 end
 
@@ -30,12 +30,12 @@ global main.Lighter lighter;
 
 rule "fast enough"
 when
-    $message1:Message() from entry-point startEntryPoint
-    $message2:Message(!$message2.isProcessed() && !$message1.isProcessed(),
-                        $message1 != $message2,
-                        this after [ 0s,  1s ] $message1 )  from entry-point startEntryPoint
+    $click1:ClickEvent() from entry-point startEntryPoint
+    $click2:ClickEvent(!$click2.isProcessed() && !$click1.isProcessed(),
+                        $click1 != $click2,
+                        this after [ 0s,  1s ] $click1 )  from entry-point startEntryPoint
 then
-    $message1.setProcessed(true);
+    $click1.setProcessed(true);
     insert(new LightUpEvent());
 end
 
